@@ -1,0 +1,6 @@
+dynaconf==3.2.5
+fastapi==0.110.3
+openai==1.25.0
+pydantic==2.7.1
+requests==2.31.0
+uvicorn==0.29.0
