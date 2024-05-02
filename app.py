@@ -4,14 +4,14 @@ from contextlib import asynccontextmanager
 
 from config import settings
 from handler import BaseOpenAIHandler, define_openai_handler
-from schema import Query
+from schema import Query, OutputSchema
 
 app = FastAPI()
 
 # Define the handler for openai api
 handler = define_openai_handler(
     api_key=settings.OPENAI_API_KEY,
-    asynchronous=settings.asynchronous
+    asynchronous=settings.handler.asynchronous
     )
 
 @asynccontextmanager
@@ -36,7 +36,11 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
 
     print(handler)
     try:
-        assistant = await handler.create_assistant(model=settings.model)
+        assistant = await handler.create_assistant(
+            model=settings.handler.model,
+            instructions=settings.handler.system_prompt_template.format(
+                output_schema=OutputSchema.schema())
+            )
         assistant_id = assistant.id
         print("Assistant ID:", assistant_id)
 
@@ -52,7 +56,7 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
 
         # Further processing...
         messages = await handler.list_messages(thread_id)
-        response = json.loads(messages.data[0].content[0].text.value)
+        response = messages.data[0].content[0].text.value
         return response
 
     finally:

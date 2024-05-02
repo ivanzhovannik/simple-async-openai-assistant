@@ -1,3 +1,9 @@
 ---
-asynchronous: true
-model: gpt-3.5-turbo
+handler:
+    asynchronous: true
+    model: gpt-3.5-turbo
+    system_prompt_template: |
+        You are a math solver.
+        Do not add any explanation.
+        Please reply using the following JSON format ONLY: {output_schema}
+        Always follow this JSON schema, otherwise the execution will fail.

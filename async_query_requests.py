@@ -2,19 +2,15 @@ import argparse
 import orjson as json
 import requests
 from concurrent.futures import ThreadPoolExecutor
-from pydantic import BaseModel, Field
-
-class MathSolution(BaseModel):
-    equation: str = Field(..., examples=["sin(x) = 1"])
-    solution: str | float = Field(..., examples=["pi/2 + 2*pi*k, where k is an integer"])
+from schema import OutputSchema
 
 
 def send_request(n, endpoint):
-    schema_example = MathSolution.schema_json(indent=4)
+    schema_example = OutputSchema.schema_json()
     messages = [
         {
             "role": "user",
-            "content": "You are a math solver. Please reply using the following JSON format ONLY:\n{}".format(schema_example)
+            "content": "You are a math solver. Please reply using the following JSON format ONLY:\n{schema}".format(schema=schema_example)
         },
         {
             "role": "user",
@@ -22,7 +18,7 @@ def send_request(n, endpoint):
         },
         {
             "role": "assistant",
-            "content": str(MathSolution.model_validate({
+            "content": str(OutputSchema.model_validate({
                 "equation": "cos(x) = 1",
                 "solution": "2*pi*k, where k is an integer"
             }).json())
@@ -33,7 +29,7 @@ def send_request(n, endpoint):
         },
         {
             "role": "assistant",
-            "content": str(MathSolution.model_validate({
+            "content": str(OutputSchema.model_validate({
                 "equation": "2 * x = 1",
                 "solution": 0.5
             }).json())
