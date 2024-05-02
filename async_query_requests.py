@@ -1,5 +1,5 @@
 import argparse
-import json
+import orjson as json
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel, Field

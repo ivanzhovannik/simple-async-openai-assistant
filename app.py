@@ -1,16 +1,18 @@
+import orjson as json
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
 from config import settings
-from handler import BaseOpenAIHandler, AsyncOpenAIHandler, SyncOpenAIHandler
+from handler import BaseOpenAIHandler, define_openai_handler
+from schema import Query
 
 app = FastAPI()
 
-class Query(BaseModel):
-    messages: list[dict[str, str]]
-
-handler = AsyncOpenAIHandler(api_key=settings.OPENAI_API_KEY)
+# Define the handler for openai api
+handler = define_openai_handler(
+    api_key=settings.OPENAI_API_KEY,
+    asynchronous=settings.asynchronous
+    )
 
 @asynccontextmanager
 async def get_handler():
@@ -34,7 +36,7 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
 
     print(handler)
     try:
-        assistant = await handler.create_assistant(model="gpt-3.5-turbo")
+        assistant = await handler.create_assistant(model=settings.model)
         assistant_id = assistant.id
         print("Assistant ID:", assistant_id)
 
@@ -50,8 +52,8 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
 
         # Further processing...
         messages = await handler.list_messages(thread_id)
-        response = messages.data[0].content[0].text.value
-        return {'response': response}
+        response = json.loads(messages.data[0].content[0].text.value)
+        return response
 
     finally:
         if 'assistant_id' in locals():

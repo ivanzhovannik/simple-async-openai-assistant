@@ -114,3 +114,9 @@ class SyncOpenAIHandler(BaseOpenAIHandler):
                 return run
             time.sleep(5)
 
+
+def define_openai_handler(api_key: str, asynchronous: bool) -> BaseOpenAIHandler:
+    if asynchronous:
+        return AsyncOpenAIHandler(api_key=api_key)
+    else:
+        return SyncOpenAIHandler(api_key=api_key)
