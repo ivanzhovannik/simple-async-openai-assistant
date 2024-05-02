@@ -1,0 +1,4 @@
+.gitignore
+.secrets/*
+__pycache__
+README.md

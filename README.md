@@ -34,7 +34,7 @@ python async_query_requests.py <N> http://localhost:50000/api/query
 
 1. **Build the image**:
 ```shell
-docker build -it async-openai-assistant:latest .
+docker build -t async-openai-assistant:latest .
 ```
 
 2. **Run the container**:
@@ -45,7 +45,6 @@ docker run -p 50000:50000 async-openai-assistant:latest
 3. **Don't forget to set your `.secrets.yaml` to enable openai api**
 ```yaml
 docker exec <container_id_or_name> sh -c 'echo "OPENAI_API_KEY: <YOUR_API_KEY_HERE>" > /app/.secrets.yaml'
-
 ```
 
 4. **Execute <N> api calls concurrently**
