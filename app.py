@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
 from config import settings
-from handler import AsyncOpenAIHandler
+from handler import BaseOpenAIHandler, AsyncOpenAIHandler, SyncOpenAIHandler
 
 app = FastAPI()
 
@@ -27,7 +27,7 @@ async def dependency():
         yield handler
 
 @app.post("/api/query")
-async def query(query: Query, handler: AsyncOpenAIHandler = Depends(dependency)):
+async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
     # Use handler that is injected by Depends
     if not handler:
         raise HTTPException(status_code=503, detail="Server is not ready")

@@ -3,7 +3,6 @@ import json
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel, Field
-from typing import Union
 
 class MathSolution(BaseModel):
     equation: str = Field(..., examples=["sin(x) = 1"])
