@@ -10,10 +10,11 @@ app = FastAPI()
 class Query(BaseModel):
     messages: list[dict[str, str]]
 
+handler = AsyncOpenAIHandler(api_key=settings.OPENAI_API_KEY)
 
 @asynccontextmanager
 async def get_handler():
-    handler = AsyncOpenAIHandler(api_key=settings.OPENAI_API_KEY)
+    global handler
     try:
         yield handler
     finally:
@@ -33,7 +34,7 @@ async def query(query: Query, handler: AsyncOpenAIHandler = Depends(dependency))
 
     print(handler)
     try:
-        assistant = await handler.create_assistant(model="gpt-4-turbo")
+        assistant = await handler.create_assistant(model="gpt-3.5-turbo")
         assistant_id = assistant.id
         print("Assistant ID:", assistant_id)
 
