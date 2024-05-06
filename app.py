@@ -6,7 +6,11 @@ from config import settings
 from handler import BaseOpenAIHandler, define_openai_handler
 from schema import Query, OutputSchema
 
-app = FastAPI()
+app = FastAPI(
+    title=settings.openapi.title,
+    description=settings.openapi.description,
+    version=settings.openapi.version
+)
 
 # Define the handler for openai api
 handler = define_openai_handler(
@@ -28,7 +32,7 @@ async def dependency():
     async with get_handler() as handler:
         yield handler
 
-@app.post("/api/query")
+@app.post("/api/query", response_model=OutputSchema)
 async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
     # Use handler that is injected by Depends
     if not handler:
@@ -57,6 +61,9 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
         # Further processing...
         messages = await handler.list_messages(thread_id)
         response = messages.data[0].content[0].text.value
+        
+        # Postprocess the string received
+        response = json.loads(response.replace("'", '"'))
         return response
 
     finally:

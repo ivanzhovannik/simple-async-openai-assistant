@@ -1,4 +1,11 @@
 ---
+openapi:
+    title: Test API for AsyncOpenAI
+    description: |
+        This is a test app you can use to build your api own custom
+        openai-based tool. Don't forget to edit your `settings.yaml`.
+    version: 0.0.1
+        
 handler:
     asynchronous: true
     model: gpt-3.5-turbo
