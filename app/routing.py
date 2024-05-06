@@ -1,39 +1,29 @@
 import orjson as json
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import APIRouter, FastAPI, HTTPException
 from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
 
-from config import settings
-from handler import BaseOpenAIHandler, define_openai_handler
-from schema import Query, OutputSchema
-
-app = FastAPI(
-    title=settings.openapi.title,
-    description=settings.openapi.description,
-    version=settings.openapi.version
+from app.schema import Query, OutputSchema
+from app.dependencies import (
+    get_openai_handler,
+    OpenAIHandlerDependency
 )
-
-# Define the handler for openai api
-handler = define_openai_handler(
-    api_key=settings.OPENAI_API_KEY,
-    asynchronous=settings.handler.asynchronous
-    )
+from config.config import settings
 
 @asynccontextmanager
-async def get_handler():
-    global handler
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
+    get_openai_handler()
     try:
-        yield handler
+        yield
     finally:
         # Clean up resources if necessary
         print("Cleaning up handler")
 
-# Define a dependency that uses the async context manager
-async def dependency():
-    async with get_handler() as handler:
-        yield handler
 
-@app.post("/api/query", response_model=OutputSchema)
-async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
+router = APIRouter(prefix="/api", tags=["assistant"])
+
+@router.post("/query", response_model=OutputSchema)
+async def query(query: Query, handler: OpenAIHandlerDependency):
     # Use handler that is injected by Depends
     if not handler:
         raise HTTPException(status_code=503, detail="Server is not ready")
@@ -71,7 +61,3 @@ async def query(query: Query, handler: BaseOpenAIHandler = Depends(dependency)):
             await handler.delete_assistant(assistant_id)
         if 'thread_id' in locals():
             await handler.delete_thread(thread_id)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=50000, reload=True)

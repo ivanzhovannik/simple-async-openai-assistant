@@ -1,11 +1,18 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-COPY . /app
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 50000 available to the world outside this container
-EXPOSE 50000
+# Copy the current directory contents into the container at /app
+COPY requirements.txt ./
+COPY app ./app
+COPY core ./core
+COPY config ./config
 
-# Run app.py when the container launches
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "50000"]
+# Install python dependencies
+RUN pip install --no-cache-dir -r requirements.txt --progress-bar=off
+
+# Make port 50050 available to the world outside this container
+EXPOSE 50050
+
+# Run app/main.py when the container launches
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "50050"]

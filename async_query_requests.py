@@ -2,7 +2,7 @@ import argparse
 import orjson as json
 import requests
 from concurrent.futures import ThreadPoolExecutor
-from schema import OutputSchema
+from app.schema import OutputSchema
 
 
 def send_request(n, endpoint):

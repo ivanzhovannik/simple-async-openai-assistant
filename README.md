@@ -14,7 +14,7 @@ source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
-2. **Add `.secrets.yaml` file to the project root**
+2. **Add `.secrets.yaml` file to `config/`**
 ```yaml
 ---
 OPENAI_API_KEY: <YOUR_OPENAI_API_KEY>
@@ -22,12 +22,12 @@ OPENAI_API_KEY: <YOUR_OPENAI_API_KEY>
 
 3. **Start the ASGI uvicorn server**:
 ```shell
-uvicorn app:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 50050
 ```
 
 4. **Execute <N> api calls concurrently**
 ```shell
-python async_query_requests.py <N> http://localhost:50000/api/query
+python async_query_requests.py <N> http://localhost:50050/api/query
 ```
 
 ### Docker
@@ -39,12 +39,12 @@ docker build -t async-openai-assistant:latest .
 
 2. **Run the container**:
 ```shell
-docker run -p 50000:50000 async-openai-assistant:latest
+docker run -p 50000:50050 async-openai-assistant:latest
 ```
 
-3. **Don't forget to set your `.secrets.yaml` to enable openai api**
+3. **Don't forget to set your `config/.secrets.yaml` to enable openai api**
 ```yaml
-docker exec <container_id_or_name> sh -c 'echo "OPENAI_API_KEY: <YOUR_API_KEY_HERE>" > /app/.secrets.yaml'
+docker exec <container_id_or_name> sh -c 'echo "OPENAI_API_KEY: <YOUR_API_KEY_HERE>" > /app/config/.secrets.yaml'
 ```
 
 4. **Execute <N> api calls concurrently**
