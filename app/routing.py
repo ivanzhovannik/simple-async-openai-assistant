@@ -1,3 +1,4 @@
+import logging
 import orjson as json
 from fastapi import APIRouter, FastAPI, HTTPException
 from contextlib import asynccontextmanager
@@ -10,6 +11,9 @@ from app.dependencies import (
 )
 from config.config import settings
 
+
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     get_openai_handler()
@@ -17,7 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
         yield
     finally:
         # Clean up resources if necessary
-        print("Cleaning up handler")
+        logger.info("Cleaning up handler")
 
 
 router = APIRouter(prefix="/api", tags=["assistant"])
@@ -28,7 +32,7 @@ async def query(query: Query, handler: OpenAIHandlerDependency):
     if not handler:
         raise HTTPException(status_code=503, detail="Server is not ready")
 
-    print(handler)
+    logger.info(f"Using Handler {handler}")
     try:
         assistant = await handler.create_assistant(
             model=settings.handler.model,
@@ -36,17 +40,17 @@ async def query(query: Query, handler: OpenAIHandlerDependency):
                 output_schema=OutputSchema.schema())
             )
         assistant_id = assistant.id
-        print("Assistant ID:", assistant_id)
+        logging.info(f"Assistant ID: {assistant_id}")
 
         thread = await handler.create_thread(messages=query.messages)
         thread_id = thread.id
-        print("Thread ID:", thread_id)
+        logging.info(f"Thread ID: {thread_id}")
 
         # Create a run and wait for it to complete
         run = await handler.create_run(thread_id=thread_id, assistant_id=assistant_id)
         run_id = run.id
         completed_run = await handler.retrieve_run_when_done(thread_id=thread_id, run_id=run_id)
-        print("Run completed:", completed_run)
+        logging.debug(f"Run completed: {completed_run}")
 
         # Further processing...
         messages = await handler.list_messages(thread_id)
@@ -59,5 +63,7 @@ async def query(query: Query, handler: OpenAIHandlerDependency):
     finally:
         if 'assistant_id' in locals():
             await handler.delete_assistant(assistant_id)
+            logger.debug(f"Removed assistant: {assistant_id}")
         if 'thread_id' in locals():
             await handler.delete_thread(thread_id)
+            logger.debug(f"Removed thread: {thread_id}")

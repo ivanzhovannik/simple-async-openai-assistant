@@ -5,6 +5,9 @@ openapi:
         This is a test app you can use to build your own custom
         openai-based tool. Don't forget to edit your `settings.yaml`.
     version: 0.0.1
+
+logging:
+    level: INFO
         
 handler:
     asynchronous: true
